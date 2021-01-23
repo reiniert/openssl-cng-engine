@@ -9,21 +9,38 @@ build_script:
 - cmd: msbuild\msbuild-single.bat
 test_script:
 - ps: >-
+
     if ($Env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") { $v = "v141" }
-        if ($Env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019") { $v = "v142" }
-        & bld\x64-Release-$v\gtest-engine-bcrypt.exe
-        & bld\x64-Release-$v\gtest-engine-ncrypt.exe
-        & bld\x86-Release-$v\gtest-engine-bcrypt.exe
-        & bld\x86-Release-$v\gtest-engine-ncrypt.exe
-        & VSTest.Console.exe --Logger:AppVeyor --enablecodecoverage --resultsdirectory:results --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x64-Debug-$v\gtest-engine-bcrypt.exe
-        & VSTest.Console.exe --Logger:AppVeyor --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x64-Debug-$v\gtest-engine-ncrypt.exe
-        & VSTest.Console.exe --Logger:AppVeyor --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x86-Debug-$v\gtest-engine-bcrypt.exe
-        & VSTest.Console.exe --Logger:AppVeyor --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x86-Debug-$v\gtest-engine-ncrypt.exe
+    
+    if ($Env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2019") { $v = "v142" }
+
+    & bld\x64-Release-$v\gtest-engine-bcrypt.exe
+        
+    & bld\x64-Release-$v\gtest-engine-ncrypt.exe
+
+    & bld\x86-Release-$v\gtest-engine-bcrypt.exe
+
+    & bld\x86-Release-$v\gtest-engine-ncrypt.exe
+
+    & VSTest.Console.exe --Logger:AppVeyor --enablecodecoverage --resultsdirectory:results --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x64-Debug-$v\gtest-engine-bcrypt.exe
+
+    & VSTest.Console.exe --Logger:AppVeyor --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x64-Debug-$v\gtest-engine-ncrypt.exe
+
+    & VSTest.Console.exe --Logger:AppVeyor --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x86-Debug-$v\gtest-engine-bcrypt.exe
+
+    & VSTest.Console.exe --Logger:AppVeyor --TestAdapterPath:packages\GoogleTestAdapter.0.18.0\build\_common bld\x86-Debug-$v\gtest-engine-ncrypt.exe
+
 after_test:
 - ps: >-  
+
     $covfile = Get-ChildItem -Path results -File -Recurse -Name
+
     & packages\Microsoft.CodeCoverage.16.8.3\build\netstandard1.0\CodeCoverage\CodeCoverage.exe analyze /output:results\bcrypt.coveragexml results\$covfile
+
     & .\packages\ReportGenerator.4.8.4\tools\net5.0\ReportGenerator.exe "-reports:results\bcrypt.coveragexml" "-reporttypes:Cobertura" "-targetdir:results"
     $env:PATH = 'C:\msys64\usr\bin;' + $env:PATH
+
     Invoke-WebRequest -Uri 'https://codecov.io/bash' -OutFile codecov.sh
+    
     bash codecov.sh -f "results/Cobertura.xml"
+    
